@@ -26,6 +26,6 @@ Website khám phá du lịch các tỉnh thành Việt Nam.
 - Hồ Chanh Phát
 - Bùi Anh Dũng
 - Huỳnh Thanh Tiến
-- Nguyễn Quang Hoài Đức (lốp)
+- Nguyễn Quang Hoài Đức
 
 Nhóm thực hiện đồ án môn học.
