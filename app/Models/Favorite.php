@@ -6,5 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Favorite extends Model
 {
-    //
+    protected $primaryKey = 'favorite_id';
+
+    protected $fillable = [
+        'user_id',
+        'destination_id',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(
+            User::class,
+            'user_id',
+            'user_id'
+        );
+    }
+
+    public function destination()
+    {
+        return $this->belongsTo(
+            Destination::class,
+            'destination_id',
+            'destination_id'
+        );
+    }
 }

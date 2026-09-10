@@ -4,34 +4,32 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ItineraryDetail extends Model
+class Itinerary extends Model
 {
-    protected $primaryKey = 'detail_id';
+    protected $primaryKey = 'itinerary_id';
 
     protected $fillable = [
-        'itinerary_id',
-        'destination_id',
-        'visit_date',
-        'visit_time',
-        'order_number',
-        'note',
+        'user_id',
+        'itinerary_name',
+        'start_date',
+        'end_date',
     ];
 
-    public function itinerary()
+    public function user()
     {
         return $this->belongsTo(
-            Itinerary::class,
-            'itinerary_id',
-            'itinerary_id'
+            User::class,
+            'user_id',
+            'user_id'
         );
     }
 
-    public function destination()
+    public function details()
     {
-        return $this->belongsTo(
-            Destination::class,
-            'destination_id',
-            'destination_id'
+        return $this->hasMany(
+            ItineraryDetail::class,
+            'itinerary_id',
+            'itinerary_id'
         );
     }
 }
