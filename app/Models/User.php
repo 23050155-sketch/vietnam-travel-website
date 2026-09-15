@@ -25,9 +25,21 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function reviews()
+    protected function casts(): array
     {
-        return $this->hasMany(Review::class, 'user_id', 'user_id');
+        return [
+            'password' => 'hashed',
+        ];
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'user_id', 'user_id');
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class, 'user_id', 'user_id');
     }
 
     public function favorites()
@@ -38,11 +50,6 @@ class User extends Authenticatable
     public function itineraries()
     {
         return $this->hasMany(Itinerary::class, 'user_id', 'user_id');
-    }
-
-    public function searchHistories()
-    {
-        return $this->hasMany(SearchHistory::class, 'user_id', 'user_id');
     }
 
     public function viewHistories()

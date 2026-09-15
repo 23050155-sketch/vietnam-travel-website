@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Review extends Model
+class Rating extends Model
 {
-    protected $primaryKey = 'review_id';
+    use HasFactory;
+
+    protected $primaryKey = 'rating_id';
 
     protected $fillable = [
         'user_id',
-        'destination_id',
+        'place_id',
         'rating',
-        'comment',
     ];
 
     public function user()
@@ -24,12 +26,12 @@ class Review extends Model
         );
     }
 
-    public function destination()
+    public function place()
     {
         return $this->belongsTo(
-            Destination::class,
-            'destination_id',
-            'destination_id'
+            Place::class,
+            'place_id',
+            'place_id'
         );
     }
 }

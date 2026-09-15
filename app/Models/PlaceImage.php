@@ -5,23 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class PlaceImage extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'category_id';
+    protected $primaryKey = 'place_image_id';
 
     protected $fillable = [
-        'name',
-        'slug',
+        'place_id',
+        'image_path',
+        'caption',
+        'sort_order',
     ];
 
-    public function places()
+    public function place()
     {
-        return $this->belongsToMany(
+        return $this->belongsTo(
             Place::class,
-            'category_place',
-            'category_id',
+            'place_id',
             'place_id'
         );
     }

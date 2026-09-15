@@ -2,20 +2,27 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ViewHistory extends Model
 {
+    use HasFactory;
+
     protected $table = 'view_history';
 
-    protected $primaryKey = 'view_id';
+    protected $primaryKey = 'view_history_id';
 
     public $timestamps = false;
 
     protected $fillable = [
         'user_id',
-        'destination_id',
+        'place_id',
         'viewed_at',
+    ];
+
+    protected $casts = [
+        'viewed_at' => 'datetime',
     ];
 
     public function user()
@@ -27,12 +34,12 @@ class ViewHistory extends Model
         );
     }
 
-    public function destination()
+    public function place()
     {
         return $this->belongsTo(
-            Destination::class,
-            'destination_id',
-            'destination_id'
+            Place::class,
+            'place_id',
+            'place_id'
         );
     }
 }
