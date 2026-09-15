@@ -56,4 +56,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(ViewHistory::class, 'user_id', 'user_id');
     }
+
+    protected function casts(): array
+    {
+        return [
+        'password' => 'hashed',
+        ];
+    }
 }
