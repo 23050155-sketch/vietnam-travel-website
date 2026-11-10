@@ -2541,9 +2541,7 @@
                     <h3>Miền Bắc</h3>
 
                     <p>
-                        Nổi bật với núi rừng Tây Bắc,
-                        Vịnh Hạ Long, Hà Nội và những
-                        nét văn hóa truyền thống.
+                        Núi non, văn hóa, di sản và những vịnh biển tuyệt đẹp
                     </p>
 
                     <div class="region-examples">
@@ -2567,9 +2565,7 @@
                     <h3>Miền Trung</h3>
 
                     <p>
-                        Khám phá những bãi biển đẹp,
-                        phố cổ Hội An, cố đô Huế
-                        và nhiều di sản đặc sắc.
+                        Các bãi biển, thị trấn di sản và văn hóa địa phương
                     </p>
 
                     <div class="region-examples">
@@ -2593,9 +2589,7 @@
                     <h3>Miền Nam</h3>
 
                     <p>
-                        Trải nghiệm nhịp sống sôi động,
-                        khám phá miền Tây sông nước
-                        và thưởng thức ẩm thực phương Nam.
+                        Những thành phố sôi động, cuộc sống bên dòng sông và thiên nhiên nhiệt đới
                     </p>
 
                     <div class="region-examples">

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Province;
 use App\Models\Category;
+use App\Models\Place;
 use Illuminate\Http\Request;
+use App\Support\TravelMonthParser;
 
 
 class ExploreController extends Controller
@@ -98,33 +100,79 @@ class ExploreController extends Controller
         }
 
 
-        // Đếm số địa điểm phù hợp của từng tỉnh
-        $query->withCount([
-            'places' => function ($placeQuery)
-            use ($selectedCategoryIds) {
+        // Lấy tháng được chọn: chỉ chấp nhận 1 đến 12.
+        $selectedMonth = $request->query('month');
 
-                $placeQuery->where(
-                    'status',
-                    'active'
+        $selectedMonth = filter_var(
+            $selectedMonth,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1, 'max_range' => 12]]
+        );
+
+        $selectedMonth = $selectedMonth === false
+            ? null
+            : $selectedMonth;
+
+        // Khi chọn tháng, tìm các địa điểm phù hợp trước.
+        $matchingPlaceIds = null;
+
+        if ($selectedMonth !== null) {
+            $placesQuery = Place::query()
+                ->where('status', 'active');
+
+            // Kết hợp bộ lọc danh mục hiện tại.
+            if (!empty($selectedCategoryIds)) {
+                $placesQuery->whereHas(
+                    'categories',
+                    function ($categoryQuery) use ($selectedCategoryIds) {
+                        $categoryQuery->whereIn(
+                            'categories.id',
+                            $selectedCategoryIds
+                        );
+                    }
                 );
+            }
 
+            $matchingPlaceIds = $placesQuery
+                ->get(['id', 'best_months'])
+                ->filter(function ($place) use ($selectedMonth) {
+                    return TravelMonthParser::matches(
+                        $place->best_months,
+                        $selectedMonth
+                    );
+                })
+                ->pluck('id')
+                ->all();
+
+            // Chỉ giữ các tỉnh có địa điểm phù hợp.
+            $query->whereHas('places', function ($placeQuery) use ($matchingPlaceIds) {
+                $placeQuery->whereIn('places.id', $matchingPlaceIds);
+            });
+        }
+
+        // Đếm địa điểm phù hợp với các bộ lọc.
+        $query->withCount([
+            'places' => function ($placeQuery) use (
+                $selectedCategoryIds,
+                $matchingPlaceIds
+            ) {
+                $placeQuery->where('status', 'active');
 
                 if (!empty($selectedCategoryIds)) {
-
                     $placeQuery->whereHas(
                         'categories',
-                        function ($categoryQuery)
-                        use ($selectedCategoryIds) {
-
+                        function ($categoryQuery) use ($selectedCategoryIds) {
                             $categoryQuery->whereIn(
                                 'categories.id',
                                 $selectedCategoryIds
                             );
-
                         }
                     );
                 }
 
+                if ($matchingPlaceIds !== null) {
+                    $placeQuery->whereIn('places.id', $matchingPlaceIds);
+                }
             }
         ]);
 

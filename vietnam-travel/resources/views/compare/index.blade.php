@@ -409,6 +409,9 @@
 </script>
 
 @include('components.chatbot')
+<x-navbar />
+<x-footer />
+<x-compare-bar />
 
 </body>
 </html>

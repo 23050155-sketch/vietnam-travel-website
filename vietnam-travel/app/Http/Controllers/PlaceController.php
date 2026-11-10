@@ -128,65 +128,43 @@ class PlaceController extends Controller
             !is_null($place->latitude) &&
             !is_null($place->longitude)
         ) {
-
             $latitude = (float) $place->latitude;
             $longitude = (float) $place->longitude;
 
             $nearbyPlaces = Place::query()
                 ->select('places.*')
-
                 ->selectRaw(
-                    '
-                    (
-                        6371 * acos(
-                            cos(radians(?))
-                            * cos(radians(latitude))
-                            * cos(
-                                radians(longitude)
-                                - radians(?)
-                            )
-                            + sin(radians(?))
-                            * sin(radians(latitude))
+                    '(
+                        6371 * ACOS(
+                            LEAST(1, GREATEST(-1,
+                                COS(RADIANS(?))
+                                * COS(RADIANS(latitude))
+                                * COS(RADIANS(longitude) - RADIANS(?))
+                                + SIN(RADIANS(?))
+                                * SIN(RADIANS(latitude))
+                            ))
                         )
-                    ) AS distance_km
-                    ',
-                    [
-                        $latitude,
-                        $longitude,
-                        $latitude
-                    ]
+                    ) AS distance_km',
+                    [$latitude, $longitude, $latitude]
+                )
+                ->where('id', '!=', $place->id)
+                ->where('status', 'active')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereRaw('latitude BETWEEN -90 AND 90')
+                ->whereRaw('longitude BETWEEN -180 AND 180')
+                ->having('distance_km', '<=', 80)
+                ->with(['province', 'categories'])
+
+                // Ưu tiên địa điểm cùng tỉnh trước.
+                ->orderByRaw(
+                    'CASE WHEN province_id = ? THEN 0 ELSE 1 END',
+                    [$place->province_id]
                 )
 
-                ->where(
-                    'id',
-                    '!=',
-                    $place->id
-                )
-
-                ->where(
-                    'status',
-                    'active'
-                )
-
-                ->whereNotNull(
-                    'latitude'
-                )
-
-                ->whereNotNull(
-                    'longitude'
-                )
-
-                ->with([
-                    'province',
-                    'categories'
-                ])
-
-                ->orderBy(
-                    'distance_km'
-                )
-
-                ->limit(4)
-
+                // Trong từng nhóm, chọn địa điểm gần nhất.
+                ->orderBy('distance_km')
+                ->limit(8)
                 ->get();
         }
             

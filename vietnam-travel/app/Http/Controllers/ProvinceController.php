@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Province;
 use App\Models\Category;
+use App\Support\TravelMonthParser;
 
 class ProvinceController extends Controller
 {
@@ -49,6 +50,18 @@ class ProvinceController extends Controller
                     $categoryId;
             }
         }
+
+
+        // Tháng du lịch được chọn (1 đến 12).
+        $selectedMonth = filter_var(
+            $request->query('month'),
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1, 'max_range' => 12]]
+        );
+
+        $selectedMonth = $selectedMonth === false
+            ? null
+            : $selectedMonth;
 
 
         /*
@@ -275,6 +288,21 @@ class ProvinceController extends Controller
             ->firstOrFail();
 
 
+        // Lọc các địa điểm đã tải theo tháng du lịch.
+        if ($selectedMonth !== null) {
+            $filteredPlaces = $province->places
+                ->filter(function ($place) use ($selectedMonth) {
+                    return TravelMonthParser::matches(
+                        $place->best_months,
+                        $selectedMonth
+                    );
+                })
+                ->values();
+
+            $province->setRelation('places', $filteredPlaces);
+        }
+
+
         /*
         |--------------------------------------------------------------------------
         | DANH SÁCH CATEGORY
@@ -291,7 +319,8 @@ class ProvinceController extends Controller
             compact(
                 'province',
                 'categories',
-                'selectedCategoryIds'
+                'selectedCategoryIds',
+                'selectedMonth'
             )
         );
     }

@@ -105,12 +105,7 @@
 
         .search-form {
             display: grid;
-
-            grid-template-columns:
-                minmax(0, 1fr)
-                210px
-                auto;
-
+            grid-template-columns: minmax(0, 1fr) 160px 160px auto;
             gap: 10px;
         }
 
@@ -822,6 +817,20 @@
             </select>
 
 
+            <select name="month" class="form-control">
+                <option value="">Tất cả các tháng</option>
+
+                @for($month = 1; $month <= 12; $month++)
+                    <option
+                        value="{{ $month }}"
+                        @selected((string) request('month') === (string) $month)
+                    >
+                        Tháng {{ $month }}
+                    </option>
+                @endfor
+            </select>
+
+
             <button
                 type="submit"
                 class="search-button"
@@ -949,7 +958,8 @@
                 request()->filled('type') ||
                 request()->filled('categories') ||
                 request()->filled('category') ||
-                request()->filled('region')
+                request()->filled('region') ||
+                request()->filled('month')
             )
 
                 <a
@@ -1098,15 +1108,12 @@
                         <div class="province-action">
 
                             <a
-                                href="{{
-                                    url('/provinces/' . $province->slug)
-                                    .
-                                    (
-                                        !empty($selectedCategoryIds)
-                                            ? '?' . http_build_query([
-                                                'categories' => $selectedCategoryIds
-                                            ])
-                                            : ''
+                                href="{{ url('/provinces/' . $province->slug) . '?' .
+                                    http_build_query(
+                                        array_filter([
+                                            'categories' => $selectedCategoryIds,
+                                            'month' => request('month'),
+                                        ], fn($value) => $value !== null && $value !== '' && $value !== [])
                                     )
                                 }}"
                                 class="explore-button"

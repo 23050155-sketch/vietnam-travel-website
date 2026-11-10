@@ -1507,9 +1507,41 @@
 
         .place-map-wrapper {
             position: relative;
+            isolation: isolate;
+            z-index: 0;
+            overflow: hidden;
+            border-radius: 18px;
         }
 
+        .place-map {
+            position: relative;
+            z-index: 0;
+        }
 
+       /* Nút zoom Leaflet */
+        .place-map .leaflet-control-zoom a {
+            display: block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        /* Giữ nút zoom và attribution trong vùng bản đồ */
+        .place-map .leaflet-top,
+        .place-map .leaflet-bottom {
+            z-index: 800;
+        }
+
+        .place-map .leaflet-control-attribution {
+            padding: 2px 6px;
+            font-size: 10px;
+            line-height: 1.4;
+            background: rgba(255, 255, 255, 0.9);
+        }
 
 
         .custom-map-marker {
@@ -1626,6 +1658,15 @@
         .place-compare-action .compare-add-btn.is-selected {
             background: #0f766e;
             color: white;
+        }
+
+
+        .other-province-pin svg path {
+            fill: #f59e0b;
+        }
+
+        .map-legend-dot.other-province {
+            background: #f59e0b;
         }
 
     </style>
@@ -1928,7 +1969,12 @@
 
                 <div class="map-legend-item">
                     <span class="map-legend-dot nearby"></span>
-                    <span>Địa điểm gần đây</span>
+                    <span>Địa điểm gần đó cùng tỉnh</span>
+                </div>
+
+                <div class="map-legend-item">
+                    <span class="map-legend-dot other-province"></span>
+                    <span>Địa điểm gần đó khác tỉnh</span>
                 </div>
 
             </div>
@@ -2847,21 +2893,23 @@
         {{ $place->longitude }};
 
 
-    const placeMap =
-        L.map('placeMap', {
-            minZoom: 5,
-            maxZoom: 19
-        })
-        .setView(
-            [
-                latitude,
-                longitude
-            ],
-            15
-        );
+    const placeMap = L.map('placeMap', {
+        minZoom: 5,
+        maxZoom: 19,
+        zoomControl: false,
+        scrollWheelZoom: true
+    });
 
-    const mapPoints = [];
+    L.control.zoom({
+        position: 'topright'
+    }).addTo(placeMap);
 
+    placeMap.setView([latitude, longitude], 14);
+
+    // Mảng lưu tọa độ của tất cả marker
+    const mapPoints = [
+        [latitude, longitude]
+    ];
 
 
     const currentPlaceIcon = L.divIcon({
@@ -2887,6 +2935,35 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
                     <circle cx="12" cy="9" r="3.2" fill="white"></circle>
+                </svg>
+            </div>
+        `,
+        iconSize: [30, 40],
+        iconAnchor: [15, 40],
+        popupAnchor: [0, -36]
+    });
+
+
+    const otherProvinceIcon = L.divIcon({
+        className: 'custom-map-marker',
+        html: `
+            <div class="map-pin other-province-pin">
+                <svg
+                    width="30"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                        style="fill: #f59e0b !important;"
+                    />
+                    <circle
+                        cx="12"
+                        cy="9"
+                        r="3.2"
+                        style="fill: #ffffff !important;"
+                    />
                 </svg>
             </div>
         `,
@@ -2951,15 +3028,7 @@
         }
     )
     .addTo(placeMap)
-    .bindPopup(
-        popupContent
-    )
-    .openPopup();
-
-    mapPoints.push([
-        latitude,
-        longitude
-    ]);
+    .bindPopup(popupContent);
 
 
 
@@ -2976,7 +3045,9 @@
                     {{ $nearbyPlace->longitude }}
                 ],
                 {
-                    icon: nearbyPlaceIcon
+                    icon: {{ $nearbyPlace->province_id === $place->province_id
+                        ? 'nearbyPlaceIcon'
+                        : 'otherProvinceIcon' }}
                 }
             )
             .addTo(placeMap)
@@ -3026,14 +3097,17 @@
 
     if (mapPoints.length > 1) {
 
-        placeMap.fitBounds(
-            mapPoints,
-            {
-                padding: [40, 40],
-                maxZoom: 14
-            }
-        );
+        placeMap.fitBounds(mapPoints, {
+            padding: [55, 55],
+            maxZoom: 14,
+            animate: false
+        });
     }
+
+
+    window.addEventListener('load', function () {
+        placeMap.invalidateSize();
+    });
 
 </script>
 

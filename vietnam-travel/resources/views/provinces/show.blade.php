@@ -838,12 +838,8 @@
 
         .advanced-filter-row {
             display: grid;
-
-            grid-template-columns:
-                repeat(2, minmax(0, 240px));
-
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 14px;
-
             margin-bottom: 16px;
         }
 
@@ -984,33 +980,29 @@
     <div class="filter-bar">
 
         <a
-            href="{{
-                url()->current() .
-                (
-                    !empty($selectedCategoryIds)
-                        ? '?' . http_build_query([
-                            'categories' => $selectedCategoryIds,
-                            'price' => request('price'),
-                            'rating' => request('rating')
-                        ])
-                        : ''
-                )
-            }}"
+            href="{{ url()->current() . '?' . http_build_query(
+                array_filter([
+                    'categories' => $selectedCategoryIds,
+                    'month' => $selectedMonth,
+                    'price' => request('price'),
+                    'rating' => request('rating'),
+                ], fn($value) => $value !== null && $value !== '' && $value !== [])
+            ) }}"
             class="filter-btn {{ !request('filter') ? 'active' : '' }}"
         >
             Tất cả
         </a>
 
         <a
-            href="{{
-                url()->current() . '?' .
-                http_build_query([
+            href="{{ url()->current() . '?' . http_build_query(
+                array_filter([
                     'filter' => 'popular',
                     'categories' => $selectedCategoryIds,
+                    'month' => $selectedMonth,
                     'price' => request('price'),
-                    'rating' => request('rating')
-                ])
-            }}"
+                    'rating' => request('rating'),
+                ], fn($value) => $value !== null && $value !== '' && $value !== [])
+            ) }}"
             class="filter-btn {{ request('filter') === 'popular' ? 'active' : '' }}"
         >
             Phổ biến
@@ -1072,6 +1064,25 @@
 
 
             <div class="advanced-filter-row">
+
+                <div class="advanced-filter-group">
+                    <label for="month">
+                        Tháng du lịch
+                    </label>
+
+                    <select name="month" id="month">
+                        <option value="">Tất cả các tháng</option>
+
+                        @for($month = 1; $month <= 12; $month++)
+                            <option
+                                value="{{ $month }}"
+                                @selected($selectedMonth === $month)
+                            >
+                                Tháng {{ $month }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
 
                 <div class="advanced-filter-group">
 
@@ -1168,7 +1179,8 @@
                     !empty($selectedCategoryIds) ||
                     request('filter') ||
                     request('price') ||
-                    request('rating')
+                    request('rating') ||
+                    $selectedMonth !== null
                 )
 
                     <a
